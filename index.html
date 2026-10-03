@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WordPress Contact Form Says Sent but No Email Arrives | QuietForgeTools</title>
+  <meta name="description" content="Form shows success, but the notification email never arrives. Separate submission success from mail delivery, check recipient, spam, PHP mail vs SMTP, From-domain alignment, and logs — free QuietForgeTools guide." />
+  <link rel="canonical" href="https://mamonasr789-png.github.io/quietforgetools-wp-form-sent-no-email/" />
+  <meta name="robots" content="index,follow" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand"><a href="https://mamonasr789-png.github.io/quietforgetools/"><span>QuietForgeTools</span></a> · Free diagnostic guide</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero">
+      <div class="free-chip">Free guide · DIY first · no uploads</div>
+      <h1>WordPress Contact Form Says Sent but No Email Arrives</h1>
+      <p class="lead">
+        The visitor sees a success message. The form plugin may even save an entry.
+        Your notification inbox stays empty. This page focuses on that exact symptom —
+        successful submission with missing mail — not the broader “form not sending” checklist.
+      </p>
+      <div class="callout callout-accent" role="note">
+        <strong>Broader troubleshooting:</strong>
+        If you are not sure the form submitted at all (errors, blank page, failed POST),
+        start with the
+        <a href="https://mamonasr789-png.github.io/quietforgetools-wp-contact-form-not-sending/">WordPress contact form not sending emails</a>
+        diagnostic hub, then return here once success is confirmed.
+      </div>
+    </div>
+
+    <nav class="wrap toc" aria-label="On this page">
+      <h2 class="toc-title">On this page</h2>
+      <ol>
+        <li><a href="#submission-vs-delivery">Submission success vs mail delivery</a></li>
+        <li><a href="#recipient-config">Notification recipient configuration</a></li>
+        <li><a href="#spam-quarantine">Spam, junk, and quarantine</a></li>
+        <li><a href="#php-mail-vs-smtp">WordPress/PHP mail vs SMTP</a></li>
+        <li><a href="#from-domain">Sender / From-domain alignment</a></li>
+        <li><a href="#smtp-logging">SMTP and plugin logging</a></li>
+        <li><a href="#controlled-recipient">Test with a controlled recipient</a></li>
+        <li><a href="#site-vs-downstream">Site/form failure vs downstream delivery</a></li>
+        <li><a href="#evidence">Record reproducible evidence</a></li>
+        <li><a href="#isolated-vs-wider">Isolated vs wider enquiry-path failure</a></li>
+      </ol>
+    </nav>
+
+    <section id="submission-vs-delivery" aria-labelledby="h-sub-del">
+      <div class="wrap">
+        <h2 id="h-sub-del">1. Distinguish successful form submission from successful mail delivery</h2>
+        <p>
+          “Says sent” and “email arrived” are two different outcomes. Treat them separately.
+        </p>
+        <ul>
+          <li>Confirm the UI success state: inline message, thank-you redirect, or both — after a real submit, not a draft save.</li>
+          <li>In DevTools → Network, confirm the form POST/AJAX returned 200/302 (not 4xx/5xx). A green UI with a failed request is a front-end lie, not a mail problem.</li>
+          <li>Check the form plugin’s entries/submissions log. An entry that saved with no notification is the classic “sent but no email” case.</li>
+          <li>If there is <em>no</em> entry and the Network request failed, stop here and use the
+            <a href="https://mamonasr789-png.github.io/quietforgetools-wp-contact-form-not-sending/">broader contact-form diagnostic</a>
+            — you do not yet have delivery evidence.</li>
+          <li>Do not assume one universal cause: missing mail after a saved entry can be recipient, spam, PHP mail, SMTP, or downstream filtering.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="recipient-config" aria-labelledby="h-recipient">
+      <div class="wrap">
+        <h2 id="h-recipient">2. Verify notification recipient / address configuration</h2>
+        <p>Wrong or outdated “To” addresses are common after migrations and staff changes.</p>
+        <ul>
+          <li>Open the form’s Mail / Notifications settings and read the exact To address (copy-paste into a note).</li>
+          <li>Compare with Settings → General → Administration Email Address — they often differ.</li>
+          <li>If To uses a mail-tag, dynamic field, or role, confirm that field is populated on the saved entry.</li>
+          <li>Check CC/BCC and conditional notifications that may skip send for certain products, languages, or empty fields.</li>
+          <li>Confirm the admin notification is enabled (not only a visitor auto-reply).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="spam-quarantine" aria-labelledby="h-spam">
+      <div class="wrap">
+        <h2 id="h-spam">3. Check spam, junk, and quarantine</h2>
+        <p>Many “never arrives” reports are “arrived but filtered.”</p>
+        <ul>
+          <li>Search the recipient inbox for a unique test phrase you put in the message body.</li>
+          <li>Check Spam / Junk, and any provider quarantine (Google Workspace, Microsoft 365, host spam filter).</li>
+          <li>Review filters/rules that auto-archive, label, or forward form mail to an unused mailbox.</li>
+          <li>If mail lands in spam, note From, Reply-To, and subject — they feed the next From-domain check.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="php-mail-vs-smtp" aria-labelledby="h-php-smtp">
+      <div class="wrap">
+        <h2 id="h-php-smtp">4. WordPress/PHP mail versus SMTP</h2>
+        <p>Default PHP <code>mail()</code> on shared hosting is often throttled or dropped after the form “succeeds.”</p>
+        <ul>
+          <li>Ask: does this site send via an SMTP plugin or transactional API, or only via PHP mail?</li>
+          <li>If only PHP mail: hosting “send test email” to the same recipient separates host mail from form-plugin mail.</li>
+          <li>If SMTP is configured: confirm it is active for the form path (some plugins only affect <code>wp_mail</code> when hooked correctly).</li>
+          <li>Do not treat every missing inbox as “need SMTP” until submission success and correct recipient are proven.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="from-domain" aria-labelledby="h-from">
+      <div class="wrap">
+        <h2 id="h-from">5. Sender / From-domain alignment (high level)</h2>
+        <p>Misaligned From addresses often pass the form UI and still never reach the inbox.</p>
+        <ul>
+          <li>Note the From address on the notification. Prefer a mailbox on a domain you control.</li>
+          <li>Avoid From addresses that impersonate the visitor’s personal Gmail/Outlook (Reply-To can carry their address instead).</li>
+          <li>At a high level: sending service and domain SPF/DKIM should align for that From. Deep DNS debugging is out of scope here — only flag mismatch as a likely delivery filter cause.</li>
+          <li>If spam quarantine shows “spoof” or “failed authentication,” treat From-domain alignment as a priority check before more form tweaks.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="smtp-logging" aria-labelledby="h-logs">
+      <div class="wrap">
+        <h2 id="h-logs">6. SMTP and plugin logging where available</h2>
+        <p>Logs turn “maybe sent” into “attempted / accepted / rejected.”</p>
+        <ul>
+          <li>Open the SMTP plugin’s send log (or last error). Failed auth, TLS, quota, or blocked recipient appear there.</li>
+          <li>Check form-plugin mail logs or debug add-ons if present — some record “mail attempted” vs “mail failed.”</li>
+          <li>Hosting mail logs (if accessible) can show the message left PHP but was rejected downstream.</li>
+          <li>If logs say accepted by the remote MTA but the inbox is empty, bias toward spam/quarantine or wrong mailbox — not form UI.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="controlled-recipient" aria-labelledby="h-control">
+      <div class="wrap">
+        <h2 id="h-control">7. Test with a controlled recipient</h2>
+        <p>One known mailbox you control removes “maybe the client’s filter” ambiguity.</p>
+        <ul>
+          <li>Temporarily set To to an address you own (same domain or a clean personal test inbox).</li>
+          <li>Submit with a unique phrase; check inbox + spam within a few minutes.</li>
+          <li>If controlled recipient gets mail and the original does not: original mailbox/filter/quarantine is the fault zone.</li>
+          <li>If neither gets mail but the entry saves: stay on PHP/SMTP/From-domain and logging — not recipient typos alone.</li>
+          <li>Restore the production To address after the test; do not leave a personal inbox as the live notification target.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="site-vs-downstream" aria-labelledby="h-site-down">
+      <div class="wrap">
+        <h2 id="h-site-down">8. Distinguish site/form failure from downstream delivery failure</h2>
+        <p>Decide which side of the wire broke.</p>
+        <ul>
+          <li><strong>Site/form side:</strong> no entry, failed Network request, disabled notification, empty To, conditional skip, plugin error on send.</li>
+          <li><strong>Downstream delivery:</strong> entry saved, logs show accept/attempt, mail appears in spam/quarantine, or only some recipients receive it.</li>
+          <li>Visitor auto-reply arrives but admin notification does not (or the reverse) — that often points to notification config or per-message filtering, not “the form is broken.”</li>
+          <li>Document which side you believe failed before changing multiple systems at once.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="evidence" aria-labelledby="h-evidence">
+      <div class="wrap">
+        <h2 id="h-evidence">9. Record reproducible evidence</h2>
+        <p>Vague “emails don’t work” stalls fixes; a short evidence pack does not.</p>
+        <ul>
+          <li>Date/time with timezone, form page URL, device, browser.</li>
+          <li>Unique message phrase; UI success yes/no; Network status code.</li>
+          <li>Entry saved yes/no (plugin log ID if available).</li>
+          <li>Inboxes checked (including spam/quarantine); mail arrived yes/no.</li>
+          <li>SMTP/plugin log snippet or error string, if any.</li>
+          <li>One change between tests — then retest the same phrase pattern.</li>
+        </ul>
+        <p>
+          Tip: mark the same items in the
+          <a href="https://mamonasr789-png.github.io/quietforgetools-wp-enquiry-checklist/">free Enquiry Path Checklist</a>
+          and copy the summary for your records or a developer.
+        </p>
+      </div>
+    </section>
+
+    <section id="isolated-vs-wider" aria-labelledby="h-isolated">
+      <div class="wrap">
+        <h2 id="h-isolated">10. Isolated issue vs wider enquiry-path failure</h2>
+        <p>
+          A single wrong recipient, spam hit, or SMTP auth error is often an isolated fix.
+          Treat it as a wider enquiry-path problem when several of these hold:
+        </p>
+        <ul>
+          <li>Submission succeeds and entries save, but delivery is inconsistent across recipients or time.</li>
+          <li>SMTP, DNS (SPF/DKIM), and plugin notifications all need coordinated changes.</li>
+          <li>The path spans multiple steps, conditional fields, CRM/webhooks, or separate confirmation pages.</li>
+          <li>You cannot reproduce reliably enough to verify one change.</li>
+        </ul>
+        <p>
+          Isolated, reproducible “success UI + missing mail” with a clear single fault → short fix territory.
+          Multi-step / inconsistent delivery across the whole enquiry path → map and repair the path, not one random setting.
+        </p>
+      </div>
+    </section>
+
+    <section id="next" aria-labelledby="h-next">
+      <div class="wrap">
+        <h2 id="h-next">If you want help fixing it</h2>
+        <p class="section-lead">
+          This guide and the free checklist are complete on their own. Use a paid option only if you prefer
+          bounded help after you’ve narrowed the failure — not as a required next step.
+        </p>
+        <div class="grid services">
+          <a class="card service" href="https://mamonasr789-png.github.io/quietforgetools-wp-enquiry-checklist/">
+            <div class="tag">Free · DIY</div>
+            <h3>Enquiry Path Checklist</h3>
+            <p>Mark form, email, mobile, and delivery checks yourself; copy a diagnostic summary. Nothing uploaded.</p>
+          </a>
+          <a class="card service" href="https://mamonasr789-png.github.io/quietforgetools-wp-maintenance/quick-fix/">
+            <div class="tag">Isolated / simple failure</div>
+            <h3>£49 WordPress Quick Fix</h3>
+            <p>One agreed problem: diagnosis, one fix attempt, verification, completion note.</p>
+          </a>
+          <a class="card service" href="https://mamonasr789-png.github.io/quietforgetools-enquiry-repair/">
+            <div class="tag">Multi-step enquiry path</div>
+            <h3>£149 Enquiry Path Repair</h3>
+            <p>One clearly defined broken enquiry, contact, or quote path — implement + test.</p>
+          </a>
+        </div>
+        <p class="hint">
+          Also see the broader
+          <a href="https://mamonasr789-png.github.io/quietforgetools-wp-contact-form-not-sending/">contact form not sending</a>
+          hub · Catalogue:
+          <a href="https://mamonasr789-png.github.io/quietforgetools/">QuietForgeTools hub</a>.
+          No private payment links on this page.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><a href="https://mamonasr789-png.github.io/quietforgetools/">QuietForgeTools</a> · WordPress form sent but no email · free</p>
+      <p class="foot-note">
+        Related:
+        <a href="https://mamonasr789-png.github.io/quietforgetools-wp-contact-form-not-sending/">Form not sending (broad)</a>
+        ·
+        <a href="https://mamonasr789-png.github.io/quietforgetools-wp-enquiry-checklist/">Free checklist</a>
+        ·
+        <a href="https://mamonasr789-png.github.io/quietforgetools-wp-maintenance/quick-fix/">Quick Fix (£49)</a>
+        ·
+        <a href="https://mamonasr789-png.github.io/quietforgetools-enquiry-repair/">Enquiry Path Repair (£149)</a>.
+        This guide does not claim every WordPress or email problem has these causes.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
